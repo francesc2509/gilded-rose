@@ -1,7 +1,4 @@
-package test.com.francesc2509.gildedrose;
-
-import com.francesc2509.gildedrose.GildedRose;
-import com.francesc2509.gildedrose.Item;
+package com.gildedrose;
 
 public class TexttestFixture {
     public static void main(String[] args) {
@@ -36,4 +33,5 @@ public class TexttestFixture {
             app.updateQuality();
         }
     }
+
 }

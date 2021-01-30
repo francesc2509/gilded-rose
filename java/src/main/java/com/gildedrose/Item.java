@@ -1,6 +1,7 @@
-package com.francesc2509.gildedrose;
+package com.gildedrose;
 
 public class Item {
+
     public String name;
 
     public int sellIn;
