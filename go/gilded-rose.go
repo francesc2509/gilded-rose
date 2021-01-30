@@ -1,19 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
 const MIN_QUALITY int = 0
 const MAX_QUALITY int = 50
-const DECREASE_AMOUNT int = 1
+const QUALITY_STEP int = 1
 
 type Item struct {
 	name            string
 	sellIn, quality int
 }
 
-type ItemHandler func(item *Item) *Item
+func (item *Item) String() string {
+	return fmt.Sprintf("Name: %s, SellIn: %d, Quality: %d", item.name, item.sellIn, item.quality)
+}
+
+type ItemHandler func(item *Item) int
 
 var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 	"Aged Brie":        agedBrieHandler,
@@ -21,94 +26,10 @@ var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 	"Conjured":         conjuredHandler,
 }
 
-var conjuredHandler ItemHandler = func(item *Item) *Item {
-	qualityDecrease := 2 * DECREASE_AMOUNT
-
-	if item.quality == 1 {
-		item.quality--
-
-		return item
-	}
-
-	if item.sellIn < 0 {
-		item.quality -= (qualityDecrease * 2)
-
-		return item
-	}
-
-	if item.quality == 1 {
-		qualityDecrease = 1
-	}
-	item.quality -= qualityDecrease
+func updateItem(item *Item) *Item {
+	item.sellIn -= QUALITY_STEP
 
 	return item
-}
-
-var backstagePassHandler ItemHandler = func(item *Item) *Item {
-	if item.sellIn < 0 && item.quality > 0 {
-		item.quality = 0
-		return item
-	}
-
-	if item.quality == 49 {
-		item.quality += 1
-		return item
-	}
-
-	if item.sellIn > 10 {
-		item.quality += DECREASE_AMOUNT
-	}
-
-	if item.sellIn > 5 {
-		item.quality += 2
-		return item
-	}
-
-	item.quality += 3
-	return item
-}
-
-var agedBrieHandler ItemHandler = func(item *Item) *Item {
-	item.quality++
-
-	return item
-}
-
-func (item *Item) update() *Item {
-	item.sellIn -= DECREASE_AMOUNT
-
-	return item
-}
-
-func (item *Item) handle() {
-	if strings.HasPrefix(item.name, "Sulfuras") {
-		return
-	}
-
-	item.update()
-
-	if item.quality >= MAX_QUALITY || item.quality <= MIN_QUALITY {
-		return
-	}
-
-	handler := getHandlerByItemType(item)
-	if handler != nil {
-		handler(item)
-		return
-	}
-
-	item.quality -= DECREASE_AMOUNT
-	return
-}
-
-func getHandlerByItemType(item *Item) ItemHandler {
-	for key, value := range itemTypes {
-		if strings.HasPrefix(item.name, key) {
-			return value
-		}
-	}
-
-	return nil
 }
 
 func UpdateQuality(items []*Item) {
@@ -122,5 +43,95 @@ func handleItem(item *Item) {
 		return
 	}
 
-	item.handle()
+	if strings.HasPrefix(item.name, "Sulfuras") {
+		return
+	}
+
+	updateItem(item)
+
+	step := QUALITY_STEP
+	handler := getHandlerByItemType(item)
+	if handler != nil {
+		step = handler(item)
+	} else {
+		step = getAllowedStep(item.quality, -doDoubleStep(item, step))
+	}
+
+	item.quality += step
+	return
+}
+
+func getHandlerByItemType(item *Item) ItemHandler {
+	for key, value := range itemTypes {
+		if strings.HasPrefix(item.name, key) {
+			return value
+		}
+	}
+
+	return nil
+}
+
+func agedBrieHandler(item *Item) int {
+	return getAllowedStep(item.quality, doDoubleStep(item, QUALITY_STEP))
+}
+
+func backstagePassHandler(item *Item) int {
+	if item.sellIn < 0 {
+		if item.quality > 0 {
+			item.quality = 0
+		}
+		return 0
+	}
+
+	if item.sellIn > 10 {
+		return getAllowedStep(item.quality, QUALITY_STEP)
+	}
+
+	if item.sellIn > 5 {
+		return getAllowedStep(item.quality, 2)
+	}
+
+	return getAllowedStep(item.quality, 3)
+}
+
+func conjuredHandler(item *Item) int {
+	return getAllowedStep(item.quality, -doDoubleStep(item, 2*QUALITY_STEP))
+}
+
+func getAllowedStep(quality int, step int) int {
+
+	switch true {
+	case step > 0:
+		if quality >= MAX_QUALITY {
+			return 0
+		}
+
+		qualityDiff := MAX_QUALITY - quality
+		if step <= qualityDiff {
+			return step
+		}
+
+		return qualityDiff
+	case step < 0:
+		if quality <= MIN_QUALITY {
+			return 0
+		}
+
+		qualityDiff := quality - MIN_QUALITY
+		if qualityDiff >= -step {
+			return step
+		}
+
+		return -qualityDiff
+	}
+
+	return 0
+}
+
+func doDoubleStep(item *Item, step int) int {
+	if item.sellIn < 0 {
+		return step * 2
+	}
+
+	return step
 }
