@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-const MIN_QUALITY int = 0
-const MAX_QUALITY int = 50
 const DEFAULT_STEP int = 1
 
 type Item struct {
@@ -105,25 +103,27 @@ func handleConjured(item *Item) int {
 
 // getAllowedStep returns the allowed step that not break min/max constraints
 func getAllowedStep(quality int, step int) int {
+	minQuality := 0
+	maxQuality := 50
 
 	switch true {
 	case step > 0:
-		if quality >= MAX_QUALITY {
+		if quality >= maxQuality {
 			return 0
 		}
 
-		qualityDiff := MAX_QUALITY - quality
+		qualityDiff := maxQuality - quality
 		if step <= qualityDiff {
 			return step
 		}
 
 		return qualityDiff
 	case step < 0:
-		if quality <= MIN_QUALITY {
+		if quality <= minQuality {
 			return 0
 		}
 
-		qualityDiff := quality - MIN_QUALITY
+		qualityDiff := quality - minQuality
 		if qualityDiff >= -step {
 			return step
 		}
