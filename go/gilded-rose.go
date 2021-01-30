@@ -7,7 +7,7 @@ import (
 
 const MIN_QUALITY int = 0
 const MAX_QUALITY int = 50
-const QUALITY_STEP int = 1
+const DEFAULT_STEP int = 1
 
 type Item struct {
 	name            string
@@ -15,29 +15,27 @@ type Item struct {
 }
 
 func (item *Item) String() string {
-	return fmt.Sprintf("Name: %s, SellIn: %d, Quality: %d", item.name, item.sellIn, item.quality)
+	// NOTE: The Java project has toString method included in the initial code,
+	// so I overridden it here as well to display the values of the items properly
+	return fmt.Sprintf("{name: %s, sellIn: %d, quality: %d}", item.name, item.sellIn, item.quality)
 }
 
 type ItemHandler func(item *Item) int
 
 var itemTypes map[string]ItemHandler = map[string]ItemHandler{
-	"Aged Brie":        agedBrieHandler,
-	"Backstage passes": backstagePassHandler,
-	"Conjured":         conjuredHandler,
+	"Aged Brie":        handleAgedBrie,
+	"Backstage passes": handleBackstagePass,
+	"Conjured":         handleConjured,
 }
 
-func updateItem(item *Item) *Item {
-	item.sellIn -= QUALITY_STEP
-
-	return item
-}
-
+// UpdateQuality updates Gilded Rose Inn's inventory
 func UpdateQuality(items []*Item) {
 	for _, item := range items {
 		handleItem(item)
 	}
 }
 
+// handleItem manages the update of the provided item
 func handleItem(item *Item) {
 	if item == nil {
 		return
@@ -47,9 +45,9 @@ func handleItem(item *Item) {
 		return
 	}
 
-	updateItem(item)
+	item.sellIn--
 
-	step := QUALITY_STEP
+	step := DEFAULT_STEP
 	handler := getHandlerByItemType(item)
 	if handler != nil {
 		step = handler(item)
@@ -61,6 +59,7 @@ func handleItem(item *Item) {
 	return
 }
 
+// getHandlerByItemType returns the handler associated to the type of the item provided
 func getHandlerByItemType(item *Item) ItemHandler {
 	for key, value := range itemTypes {
 		if strings.HasPrefix(item.name, key) {
@@ -71,11 +70,15 @@ func getHandlerByItemType(item *Item) ItemHandler {
 	return nil
 }
 
-func agedBrieHandler(item *Item) int {
-	return getAllowedStep(item.quality, doDoubleStep(item, QUALITY_STEP))
+// handleAgedBrie controls the specific changes that need to be applied to "Aged Brie" items
+// when thet're updated
+func handleAgedBrie(item *Item) int {
+	return getAllowedStep(item.quality, doDoubleStep(item, DEFAULT_STEP))
 }
 
-func backstagePassHandler(item *Item) int {
+// handleBackstagePass controls the specific changes that need to be applied to "Backstage Passes" items
+// when thet're updated
+func handleBackstagePass(item *Item) int {
 	if item.sellIn < 0 {
 		if item.quality > 0 {
 			item.quality = 0
@@ -84,7 +87,7 @@ func backstagePassHandler(item *Item) int {
 	}
 
 	if item.sellIn > 10 {
-		return getAllowedStep(item.quality, QUALITY_STEP)
+		return getAllowedStep(item.quality, DEFAULT_STEP)
 	}
 
 	if item.sellIn > 5 {
@@ -94,10 +97,13 @@ func backstagePassHandler(item *Item) int {
 	return getAllowedStep(item.quality, 3)
 }
 
-func conjuredHandler(item *Item) int {
-	return getAllowedStep(item.quality, -doDoubleStep(item, 2*QUALITY_STEP))
+// handleConjured controls the specific changes that need to be applied to "Conjured" items
+// when thet're updated
+func handleConjured(item *Item) int {
+	return getAllowedStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP))
 }
 
+// getAllowedStep returns the allowed step that not break min/max constraints
 func getAllowedStep(quality int, step int) int {
 
 	switch true {
@@ -128,6 +134,7 @@ func getAllowedStep(quality int, step int) int {
 	return 0
 }
 
+// doDoubleStep checks whether the step must be increased twice and returns it
 func doDoubleStep(item *Item, step int) int {
 	if item.sellIn < 0 {
 		return step * 2

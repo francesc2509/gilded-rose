@@ -2,6 +2,7 @@ package main
 
 import "testing"
 
+// TestUpdateQuality tests UpdateQuality function
 func TestUpdateQuality(t *testing.T) {
 	expectedItems := setupUpdateQuality()
 
@@ -59,6 +60,7 @@ func TestUpdateQuality(t *testing.T) {
 	}
 }
 
+// setupUpdateQuality sets up the expected values that should be returned by UpdateQuality
 func setupUpdateQuality() []*Item {
 	return []*Item{
 		nil,
