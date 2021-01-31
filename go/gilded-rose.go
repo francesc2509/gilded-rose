@@ -14,7 +14,7 @@ type Item struct {
 
 func (item *Item) String() string {
 	// NOTE: The Java project has toString method included in the initial code,
-	// so I overridden it here as well to display the values of the items properly
+	// so I've overridden it here as well to display the values of the items properly
 	return fmt.Sprintf("{name: %s, sellIn: %d, quality: %d}", item.name, item.sellIn, item.quality)
 }
 
