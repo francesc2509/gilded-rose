@@ -34,7 +34,7 @@ func TestUpdateQuality(t *testing.T) {
 		{"Conjured item 3", 3, 0},
 		{"Conjured item 4", 3, 1},
 		{"Conjured item 5", -3, 3},
-		{"Conjured item 5", -3, 40},
+		{"Conjured item 6", -3, 40},
 	}
 
 	UpdateQuality(items)
@@ -90,6 +90,6 @@ func setupUpdateQuality() []*Item {
 		{"Conjured item 3", 2, 0},
 		{"Conjured item 4", 2, 0},
 		{"Conjured item 5", -4, 0},
-		{"Conjured item 5", -4, 36},
+		{"Conjured item 6", -4, 36},
 	}
 }
