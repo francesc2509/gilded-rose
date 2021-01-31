@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GildedRoseTest {
 
     @Test
-    void foo() {
+    void updateQuality() {
         Item[] items = new Item[]{
             null,
             new Item("Ordinary item 1", 1, 50),
@@ -39,7 +39,7 @@ class GildedRoseTest {
             new Item("Conjured item 3", 3, 0),
             new Item("Conjured item 4", 3, 1),
             new Item("Conjured item 5", -3, 3),
-            new Item("Conjured item 5", -3, 40),
+            new Item("Conjured item 6", -3, 40),
         };
         Item[] expectedItems = setupUpdateQuality();
 
@@ -93,7 +93,7 @@ class GildedRoseTest {
             new Item("Conjured item 3", 2, 0),
             new Item("Conjured item 4", 2, 0),
             new Item("Conjured item 5", -4, 0),
-            new Item("Conjured item 5", -4, 36),
+            new Item("Conjured item 6", -4, 36),
         };
     }
 }
