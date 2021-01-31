@@ -1,0 +1,10 @@
+h1 {
+    display: inline;
+    justify-content: center;
+    align-items: center;
+}
+
+img {
+    height: 1em;
+    width: 1.5em;
+}
