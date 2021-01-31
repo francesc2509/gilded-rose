@@ -41,7 +41,7 @@ func TestUpdateQuality(t *testing.T) {
 		{Name: "Conjured item 5", SellIn: -3, Quality: 40},
 	}
 
-	UpdateQuality(items)
+	UpdateQuality(items, 1)
 
 	for pos, item := range items {
 		expected := expectedItems[pos]

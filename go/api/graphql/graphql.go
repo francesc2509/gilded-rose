@@ -14,14 +14,14 @@ func Init() http.HandlerFunc {
 		Fields: fields.HandleQuery(),
 	})
 
-	// rootMutation := graphql.NewObject(graphql.ObjectConfig{
-	// 	Name:   "Mutation",
-	// 	Fields: nil,
-	// })
+	rootMutation := graphql.NewObject(graphql.ObjectConfig{
+		Name:   "Mutation",
+		Fields: fields.HandleMutation(),
+	})
 
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: rootQuery,
-		// Mutation: rootMutation,
+		Query:    rootQuery,
+		Mutation: rootMutation,
 	})
 
 	if err != nil {

@@ -10,3 +10,7 @@ type itemService struct{}
 func (service *itemService) Get() ([]*entities.Item, error) {
 	return repositories.Item.Get()
 }
+
+func (service *itemService) UpdateInventory(days int) ([]*entities.Item, error) {
+	return repositories.Item.UpdateInventory(days)
+}

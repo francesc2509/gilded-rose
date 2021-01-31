@@ -9,3 +9,11 @@ func HandleQuery() graphql.Fields {
 
 	return fieldMap
 }
+
+func HandleMutation() graphql.Fields {
+	fieldMap := make(graphql.Fields)
+
+	HandleItemMutation(fieldMap)
+
+	return fieldMap
+}

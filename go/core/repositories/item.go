@@ -41,8 +41,14 @@ func (repository *itemRepository) Get() ([]*entities.Item, error) {
 	return items, nil
 }
 
+func (repository *itemRepository) UpdateInventory(days int) ([]*entities.Item, error) {
+	UpdateQuality(items, days)
+
+	return repository.Get()
+}
+
 // UpdateQuality updates Gilded Rose Inn's inventory
-func UpdateQuality(items []*entities.Item) {
+func UpdateQuality(items []*entities.Item, days int) {
 	for _, item := range items {
 		item.HandleItem()
 	}
