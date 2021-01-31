@@ -1,24 +1,20 @@
-package main
+package entities
 
 import (
 	"fmt"
 	"strings"
 )
 
-const DEFAULT_STEP int = 1
-
 type Item struct {
-	name            string
-	sellIn, quality int
-}
-
-func (item *Item) String() string {
-	// NOTE: The Java project has toString method included in the initial code,
-	// so I've overridden it here as well to display the values of the items properly
-	return fmt.Sprintf("{name: %s, sellIn: %d, quality: %d}", item.name, item.sellIn, item.quality)
+	Id      uint64 `json:"id"`
+	Name    string `json:"name"`
+	SellIn  int    `json:"sellIn"`
+	Quality int    `json:"quality"`
 }
 
 type ItemHandler func(item *Item) int
+
+const DEFAULT_STEP int = 1
 
 var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 	"Aged Brie":        handleAgedBrie,
@@ -26,41 +22,40 @@ var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 	"Conjured":         handleConjured,
 }
 
-// UpdateQuality updates Gilded Rose Inn's inventory
-func UpdateQuality(items []*Item) {
-	for _, item := range items {
-		handleItem(item)
-	}
+func (item *Item) String() string {
+	// NOTE: The Java project has toString method included in the initial code,
+	// so I've overridden it here as well to display the values of the items properly
+	return fmt.Sprintf("{name: %s, sellIn: %d, quality: %d}", item.Name, item.SellIn, item.Quality)
 }
 
 // handleItem manages the update of the provided item
-func handleItem(item *Item) {
+func (item *Item) HandleItem() {
 	if item == nil {
 		return
 	}
 
-	if strings.HasPrefix(item.name, "Sulfuras") {
+	if strings.HasPrefix(item.Name, "Sulfuras") {
 		return
 	}
 
-	item.sellIn--
+	item.SellIn--
 
 	step := DEFAULT_STEP
 	handler := getHandlerByItemType(item)
 	if handler != nil {
 		step = handler(item)
 	} else {
-		step = getMaxStep(item.quality, -doDoubleStep(item, step))
+		step = getMaxStep(item.Quality, -doDoubleStep(item, step))
 	}
 
-	item.quality += step
+	item.Quality += step
 	return
 }
 
 // getHandlerByItemType returns the handler associated to the type of the item provided
 func getHandlerByItemType(item *Item) ItemHandler {
 	for key, value := range itemTypes {
-		if strings.HasPrefix(item.name, key) {
+		if strings.HasPrefix(item.Name, key) {
 			return value
 		}
 	}
@@ -76,34 +71,34 @@ func handleAgedBrie(item *Item) int {
 	// 	-"Aged Brie" actually increases in Quality the older it gets
 	// The quality of an "Aged Brie" item increases twice as fast when
 	// its sell date has expired
-	return getMaxStep(item.quality, doDoubleStep(item, DEFAULT_STEP))
+	return getMaxStep(item.Quality, doDoubleStep(item, DEFAULT_STEP))
 }
 
 // handleBackstagePass controls the specific changes that need to be applied to "Backstage Passes" items
 // when thet're updated
 func handleBackstagePass(item *Item) int {
-	if item.sellIn < 0 {
-		if item.quality > 0 {
-			item.quality = 0
+	if item.SellIn < 0 {
+		if item.Quality > 0 {
+			item.Quality = 0
 		}
 		return 0
 	}
 
-	if item.sellIn > 10 {
-		return getMaxStep(item.quality, DEFAULT_STEP)
+	if item.SellIn > 10 {
+		return getMaxStep(item.Quality, DEFAULT_STEP)
 	}
 
-	if item.sellIn > 5 {
-		return getMaxStep(item.quality, 2)
+	if item.SellIn > 5 {
+		return getMaxStep(item.Quality, 2)
 	}
 
-	return getMaxStep(item.quality, 3)
+	return getMaxStep(item.Quality, 3)
 }
 
 // handleConjured controls the specific changes that need to be applied to "Conjured" items
 // when thet're updated
 func handleConjured(item *Item) int {
-	return getMaxStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP))
+	return getMaxStep(item.Quality, -doDoubleStep(item, 2*DEFAULT_STEP))
 }
 
 // getMaxStep returns the allowed step that not break min/max constraints
@@ -151,7 +146,7 @@ func getMaxStep(quality int, step int) int {
 
 // doDoubleStep checks whether the step must be increased twice and returns it
 func doDoubleStep(item *Item, step int) int {
-	if item.sellIn < 0 {
+	if item.SellIn < 0 {
 		return step * 2
 	}
 
