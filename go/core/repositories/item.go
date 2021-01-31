@@ -34,7 +34,7 @@ var items = []*entities.Item{
 	{Name: "Conjured item 3", SellIn: 3, Quality: 0},
 	{Name: "Conjured item 4", SellIn: 3, Quality: 1},
 	{Name: "Conjured item 5", SellIn: -3, Quality: 3},
-	{Name: "Conjured item 5", SellIn: -3, Quality: 40},
+	{Name: "Conjured item 6", SellIn: -3, Quality: 40},
 }
 
 func (repository *itemRepository) Get() ([]*entities.Item, error) {

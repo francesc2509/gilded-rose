@@ -38,7 +38,7 @@ func TestUpdateQuality(t *testing.T) {
 		{Name: "Conjured item 3", SellIn: 3, Quality: 0},
 		{Name: "Conjured item 4", SellIn: 3, Quality: 1},
 		{Name: "Conjured item 5", SellIn: -3, Quality: 3},
-		{Name: "Conjured item 5", SellIn: -3, Quality: 40},
+		{Name: "Conjured item 6", SellIn: -3, Quality: 40},
 	}
 
 	UpdateQuality(items, 1)
@@ -94,6 +94,6 @@ func setupUpdateQuality() []*entities.Item {
 		{Name: "Conjured item 3", SellIn: 2, Quality: 0},
 		{Name: "Conjured item 4", SellIn: 2, Quality: 0},
 		{Name: "Conjured item 5", SellIn: -4, Quality: 0},
-		{Name: "Conjured item 5", SellIn: -4, Quality: 36},
+		{Name: "Conjured item 6", SellIn: -4, Quality: 36},
 	}
 }
