@@ -1,0 +1,16 @@
+.App {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.App-header {
+  height: 5%;
+}
+
+.App-main {
+  flex: 1;
+}
