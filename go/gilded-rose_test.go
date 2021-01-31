@@ -12,14 +12,14 @@ func TestUpdateQuality(t *testing.T) {
 		{"Ordinary item 2", 2, 1},
 		{"Ordinary item 3", 3, 0},
 		{"Ordinary item 4", -3, 40},
-		{"Ordinary item 5", -3, -4}, // Not sure whether the quality should be set to 0 if it's negative
+		{"Ordinary item 5", -3, -4},
 		{"Sulfuras item 1", 34, 80},
 		{"Sulfuras item 2", 1, 50},
-		{"Sulfuras item 3", 4, 100}, // Same here, not sure whether the quality should be set to 80 if it's greater
+		{"Sulfuras item 3", 4, 100},
 		{"Aged Brie item 1", 0, 49},
 		{"Aged Brie item 2", 3, 48},
 		{"Aged Brie item 3", -1, 47},
-		{"Aged Brie item 4", 0, 54}, // Same here, not sure whether the quality should be set to 50 if it's greater
+		{"Aged Brie item 4", 0, 54},
 		{"Backstage passes item 1", 13, 49},
 		{"Backstage passes item 2", 10, 49},
 		{"Backstage passes item 3", 5, 48},
