@@ -43,7 +43,7 @@ class GildedRose {
             return;
         }
 
-        BiFunction<Item, Integer, Integer> handler = getHandlerByItemType(item, days);
+        BiFunction<Item, Integer, Integer> handler = getHandlerByItemType(item);
 
         int daysLimit = Math.abs(days);
         for(int day = 0; day < daysLimit; day++) {
@@ -54,7 +54,7 @@ class GildedRose {
         }
     }
 
-    private BiFunction<Item, Integer, Integer> getHandlerByItemType(Item item, int days) {
+    private BiFunction<Item, Integer, Integer> getHandlerByItemType(Item item) {
         Optional<BiFunction<Item, Integer, Integer>> handler = this.itemTypes
                 .entrySet()
                 .stream()
@@ -62,7 +62,7 @@ class GildedRose {
                 .map(Map.Entry::getValue)
                 .findFirst();
 
-        return handler.orElse((it, d) -> getAllowedStep(item.quality, -doDoubleStep(item, DEFAULT_STEP), days));
+        return handler.orElse((it, days) -> getAllowedStep(item.quality, -doDoubleStep(it, DEFAULT_STEP), days));
     }
 
     private int handleAgedBrie(Item item, Integer days) {
