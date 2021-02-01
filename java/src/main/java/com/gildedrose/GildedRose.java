@@ -1,12 +1,9 @@
 package com.gildedrose;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 class GildedRose {
     Item[] items;
@@ -30,11 +27,13 @@ class GildedRose {
             return;
         }
 
+        int reverse = days > 0 ? 1: -1;
+
         Arrays.stream(this.items)
-                .forEach((item) -> this.handleItem(item, days));
+                .forEach((item) -> this.handleItem(item, days, reverse));
     }
 
-    private void handleItem(Item item, int days) {
+    private void handleItem(Item item, int days, int reverse) {
         if (item == null) {
             return;
         }
@@ -48,7 +47,7 @@ class GildedRose {
         int daysLimit = Math.abs(days);
         for(int day = 0; day < daysLimit; day++) {
             item.sellIn--;
-            int step = handler.apply(item, days);
+            int step = handler.apply(item, reverse);
 
             item.quality += step;
         }
@@ -62,14 +61,14 @@ class GildedRose {
                 .map(Map.Entry::getValue)
                 .findFirst();
 
-        return handler.orElse((it, days) -> getAllowedStep(item.quality, -doDoubleStep(it, DEFAULT_STEP), days));
+        return handler.orElse((it, reverse) -> getMaxStep(item.quality, -doDoubleStep(it, DEFAULT_STEP), reverse));
     }
 
-    private int handleAgedBrie(Item item, Integer days) {
-        return getAllowedStep(item.quality, doDoubleStep(item, DEFAULT_STEP), days);
+    private int handleAgedBrie(Item item, int reverse) {
+        return getMaxStep(item.quality, doDoubleStep(item, DEFAULT_STEP), reverse);
     }
 
-    private int handleBackstagePass(Item item, Integer days) {
+    private int handleBackstagePass(Item item, int reverse) {
         if (item.sellIn < 0) {
             if (item.quality > 0) {
                 item.quality = 0;
@@ -78,28 +77,26 @@ class GildedRose {
         }
 
         if (item.sellIn > 10) {
-            return getAllowedStep(item.quality, DEFAULT_STEP, days);
+            return getMaxStep(item.quality, DEFAULT_STEP, reverse);
         }
 
         if (item.sellIn > 5) {
-            return getAllowedStep(item.quality, 2, days);
+            return getMaxStep(item.quality, 2, reverse);
         }
 
-        return getAllowedStep(item.quality, 3, days);
+        return getMaxStep(item.quality, 3, reverse);
     }
 
-    private int handleConjured(Item item, Integer days) {
-        return getAllowedStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP), days);
+    private int handleConjured(Item item, int reverse) {
+        return getMaxStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP), reverse);
     }
 
-    private int getAllowedStep(int quality, int step, int days) {
+    private int getMaxStep(int quality, int step, int reverse) {
         int qualityDiff;
         final int minQuality = 0;
         final int maxQuality = 50;
 
-        if (days < 0) {
-            step = -step;
-        }
+        step *= reverse;
 
         if (step > 0) {
             if (quality >= maxQuality) {
