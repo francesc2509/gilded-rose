@@ -66,7 +66,7 @@ class GildedRoseTest {
                                         expected.name.equals(item.name) &&
                                         expected.sellIn == item.sellIn &&
                                         expected.quality == item.quality,
-                                String.format("ERROR - Item %d - Name: expected %s, but got %s", idx, expected, item)
+                                String.format("ERROR - Item %d - expected %s, but got %s", idx, expected, item)
                         );
                     });
         });
