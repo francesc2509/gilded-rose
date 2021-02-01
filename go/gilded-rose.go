@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -18,7 +19,7 @@ func (item *Item) String() string {
 	return fmt.Sprintf("{name: %s, sellIn: %d, quality: %d}", item.name, item.sellIn, item.quality)
 }
 
-type ItemHandler func(item *Item) int
+type ItemHandler func(item *Item, reverse int) int
 
 var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 	"Aged Brie":        handleAgedBrie,
@@ -27,14 +28,23 @@ var itemTypes map[string]ItemHandler = map[string]ItemHandler{
 }
 
 // UpdateQuality updates Gilded Rose Inn's inventory
-func UpdateQuality(items []*Item) {
+func UpdateQuality(items []*Item, days int) {
+	if days == 0 {
+		return
+	}
+
+	reverse := 1
+	if days < 0 {
+		reverse = -1
+	}
+
 	for _, item := range items {
-		handleItem(item)
+		handleItem(item, days, reverse)
 	}
 }
 
 // handleItem manages the update of the provided item
-func handleItem(item *Item) {
+func handleItem(item *Item, days int, reverse int) {
 	if item == nil {
 		return
 	}
@@ -43,17 +53,16 @@ func handleItem(item *Item) {
 		return
 	}
 
-	item.sellIn--
-
-	step := DEFAULT_STEP
 	handler := getHandlerByItemType(item)
-	if handler != nil {
-		step = handler(item)
-	} else {
-		step = getMaxStep(item.quality, -doDoubleStep(item, step))
+
+	daysLimit := int(math.Abs(float64(days)))
+	for day := 0; day < daysLimit; day++ {
+		item.sellIn--
+		step := handler(item, reverse)
+
+		item.quality += step
 	}
 
-	item.quality += step
 	return
 }
 
@@ -65,23 +74,25 @@ func getHandlerByItemType(item *Item) ItemHandler {
 		}
 	}
 
-	return nil
+	return func(item *Item, reverse int) int {
+		return getMaxStep(item.quality, -doDoubleStep(item, DEFAULT_STEP), reverse)
+	}
 }
 
 // handleAgedBrie controls the specific changes that need to be applied to "Aged Brie" items
 // when thet're updated
-func handleAgedBrie(item *Item) int {
+func handleAgedBrie(item *Item, reverse int) int {
 	// As far as I understand from the next statements:
 	// 	-Once the sell by date has passed, Quality degrades twice as fast
 	// 	-"Aged Brie" actually increases in Quality the older it gets
 	// The quality of an "Aged Brie" item increases twice as fast when
 	// its sell date has expired
-	return getMaxStep(item.quality, doDoubleStep(item, DEFAULT_STEP))
+	return getMaxStep(item.quality, doDoubleStep(item, DEFAULT_STEP), reverse)
 }
 
 // handleBackstagePass controls the specific changes that need to be applied to "Backstage Passes" items
 // when thet're updated
-func handleBackstagePass(item *Item) int {
+func handleBackstagePass(item *Item, reverse int) int {
 	if item.sellIn < 0 {
 		if item.quality > 0 {
 			item.quality = 0
@@ -90,26 +101,28 @@ func handleBackstagePass(item *Item) int {
 	}
 
 	if item.sellIn > 10 {
-		return getMaxStep(item.quality, DEFAULT_STEP)
+		return getMaxStep(item.quality, DEFAULT_STEP, reverse)
 	}
 
 	if item.sellIn > 5 {
-		return getMaxStep(item.quality, 2)
+		return getMaxStep(item.quality, 2, reverse)
 	}
 
-	return getMaxStep(item.quality, 3)
+	return getMaxStep(item.quality, 3, reverse)
 }
 
 // handleConjured controls the specific changes that need to be applied to "Conjured" items
 // when thet're updated
-func handleConjured(item *Item) int {
-	return getMaxStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP))
+func handleConjured(item *Item, reverse int) int {
+	return getMaxStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP), reverse)
 }
 
 // getMaxStep returns the allowed step that not break min/max constraints
-func getMaxStep(quality int, step int) int {
+func getMaxStep(quality int, step int, reverse int) int {
 	minQuality := 0
 	maxQuality := 50
+
+	step *= reverse
 
 	switch true {
 	case step > 0:
