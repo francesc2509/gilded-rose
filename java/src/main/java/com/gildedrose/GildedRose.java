@@ -1,9 +1,11 @@
 package com.gildedrose;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 class GildedRose {
@@ -11,8 +13,7 @@ class GildedRose {
 
     private final int DEFAULT_STEP = 1;
 
-    private final Map<String,Function<Item, Integer>> itemTypes;
-
+    private final Map<String, BiFunction<Item, Integer, Integer>> itemTypes;
 
     public GildedRose(Item[] items) {
         this.items = items;
@@ -24,13 +25,16 @@ class GildedRose {
         );
     }
 
-    public void updateQuality() {
+    public void updateQuality(int days) {
+        if (days == 0) {
+            return;
+        }
+
         Arrays.stream(this.items)
-                .filter(Objects::nonNull)
-                .forEach(this::handleItem);
+                .forEach((item) -> this.handleItem(item, days));
     }
 
-    private void handleItem(Item item) {
+    private void handleItem(Item item, int days) {
         if (item == null) {
             return;
         }
@@ -39,36 +43,33 @@ class GildedRose {
             return;
         }
 
-        item.sellIn--;
+        BiFunction<Item, Integer, Integer> handler = getHandlerByItemType(item, days);
 
-        int step = DEFAULT_STEP;
-        Function<Item, Integer> handler = getHandlerByItemType(item);
+        int daysLimit = Math.abs(days);
+        for(int day = 0; day < daysLimit; day++) {
+            item.sellIn--;
+            int step = handler.apply(item, days);
 
-        if (handler != null) {
-            step = handler.apply(item);
-        } else {
-            step = getAllowedStep(item.quality, -doDoubleStep(item, step));
+            item.quality += step;
         }
-
-        item.quality += step;
     }
 
-    private Function<Item, Integer> getHandlerByItemType(Item item) {
-        Optional<Function<Item, Integer>> handler = this.itemTypes
+    private BiFunction<Item, Integer, Integer> getHandlerByItemType(Item item, int days) {
+        Optional<BiFunction<Item, Integer, Integer>> handler = this.itemTypes
                 .entrySet()
                 .stream()
                 .filter(entry -> item.name.startsWith(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .findFirst();
 
-        return handler.orElse(null);
+        return handler.orElse((it, d) -> getAllowedStep(item.quality, -doDoubleStep(item, DEFAULT_STEP), days));
     }
 
-    private int handleAgedBrie(Item item) {
-        return getAllowedStep(item.quality, doDoubleStep(item, DEFAULT_STEP));
+    private int handleAgedBrie(Item item, Integer days) {
+        return getAllowedStep(item.quality, doDoubleStep(item, DEFAULT_STEP), days);
     }
 
-    private int handleBackstagePass(Item item) {
+    private int handleBackstagePass(Item item, Integer days) {
         if (item.sellIn < 0) {
             if (item.quality > 0) {
                 item.quality = 0;
@@ -77,24 +78,28 @@ class GildedRose {
         }
 
         if (item.sellIn > 10) {
-            return getAllowedStep(item.quality, DEFAULT_STEP);
+            return getAllowedStep(item.quality, DEFAULT_STEP, days);
         }
 
         if (item.sellIn > 5) {
-            return getAllowedStep(item.quality, 2);
+            return getAllowedStep(item.quality, 2, days);
         }
 
-        return getAllowedStep(item.quality, 3);
+        return getAllowedStep(item.quality, 3, days);
     }
 
-    private int handleConjured(Item item) {
-        return getAllowedStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP));
+    private int handleConjured(Item item, Integer days) {
+        return getAllowedStep(item.quality, -doDoubleStep(item, 2*DEFAULT_STEP), days);
     }
 
-    private int getAllowedStep(int quality, int step) {
+    private int getAllowedStep(int quality, int step, int days) {
         int qualityDiff;
         final int minQuality = 0;
         final int maxQuality = 50;
+
+        if (days < 0) {
+            step = -step;
+        }
 
         if (step > 0) {
             if (quality >= maxQuality) {
