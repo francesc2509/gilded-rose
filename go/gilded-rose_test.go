@@ -47,7 +47,10 @@ func TestUpdateQuality(t *testing.T) {
 		-2: itemsCopy,
 	}
 
+	UpdateQuality(items, 0)
+
 	for days, expectedItems := range tests {
+
 		UpdateQuality(items, days)
 		for pos, item := range items {
 			expected := expectedItems[pos]
